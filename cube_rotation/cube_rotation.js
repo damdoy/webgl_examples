@@ -63,9 +63,11 @@ function draw(){
    //make it framerate independant
    time_diff = time-last_time;
 
+   var rotation_speed = document.getElementById("slider_speed").value;
+
    //rotate the model matrix of the cube by a little bit
    var model = cube.get_model_matrix();
-   model = mat4.rotate(model, model, -2*Math.PI*time_diff*10, [0,1,0]);
+   model = mat4.rotate(model, model, -2*Math.PI*time_diff*rotation_speed, [0,1,0]);
    cube.set_model_matrix(model);
 
    plane.set_mvp(model_matrix_plane, view_matrix, proj_matrix);
