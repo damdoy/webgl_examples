@@ -22,7 +22,7 @@ var cubes = [new Cube, new Cube];
 var plane = new Plane;
 
 var light_pos_radius = 10;
-var light_pos = [-light_pos_radius, 5.0, 0];
+var light_pos = [-1, 5.0, 0];
 
 
 var last_time = 0;
@@ -84,10 +84,16 @@ function draw(){
    light_pos[1] = light_height;
    light_pos[2] = light_pos[0]*Math.sin(time_diff*light_speed)+light_pos[2]*Math.cos(time_diff*light_speed);
 
-   plane.set_light_pos(light_pos);
-   rotating_cube.set_light_pos(light_pos);
-   cubes[0].set_light_pos(light_pos);
-   cubes[1].set_light_pos(light_pos);
+   //renormalize the rotating bit of the light position, to not lose precision
+   var vec_rot_length = light_pos[0]*light_pos[0]+light_pos[2]*light_pos[2];
+   light_pos[0] = light_pos[0]/vec_rot_length;
+   light_pos[2] = light_pos[2]/vec_rot_length;
+
+   var light_pos_scaled = [light_pos[0]*light_pos_radius, light_pos[1], light_pos[2]*light_pos_radius];
+   plane.set_light_pos(light_pos_scaled);
+   rotating_cube.set_light_pos(light_pos_scaled);
+   cubes[0].set_light_pos(light_pos_scaled);
+   cubes[1].set_light_pos(light_pos_scaled);
 
    //rotate the model matrix of the cube by a little bit
    var model = rotating_cube.get_model_matrix();
