@@ -73,6 +73,12 @@ function draw(){
 
    d = new Date();
    time = d.getTime()/100000.0;
+
+   //so that first time we do the loop, time_diff does not contain crazy value
+   if(last_time == 0){
+      last_time = time;
+   }
+
    //make it framerate independant
    time_diff = time-last_time;
 
@@ -81,7 +87,7 @@ function draw(){
 
    //apply a rotation matrix on the light pos to make it rotate around the origin
    light_pos[0] = light_pos[0]*Math.cos(time_diff*light_speed)-light_pos[2]*Math.sin(time_diff*light_speed);
-   light_pos[1] = light_height;
+   light_pos[1] = 11.0-light_height;
    light_pos[2] = light_pos[0]*Math.sin(time_diff*light_speed)+light_pos[2]*Math.cos(time_diff*light_speed);
 
    //renormalize the rotating bit of the light position, to not lose precision

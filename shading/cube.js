@@ -150,7 +150,7 @@ class Cube{
 
          float dist_light = distance(pixel_pos, light_pos);
 
-         float light_amount = angle_light-dist_light/40.0;
+         float light_amount = angle_light-dist_light/50.0;
 
          gl_FragColor = vec4(1.0*light_amount, 1.0*light_amount, 1.0*light_amount, 1.0);
       }
