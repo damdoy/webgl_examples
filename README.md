@@ -7,3 +7,5 @@
 [Shading](https://damdoy.github.io/webgl-examples/shading/shading.html)
 
 [Texturing](https://damdoy.github.io/webgl-examples/texturing/texturing.html)
+
+[Bumpmapping](https://damdoy.github.io/webgl-examples/bumpmapping/bumpmapping.html)
