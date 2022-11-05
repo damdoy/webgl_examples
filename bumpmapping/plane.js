@@ -31,15 +31,14 @@ class Plane{
       gl.bindBuffer(gl.ARRAY_BUFFER, this.tex_coord_buffer);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.text_coord), gl.STATIC_DRAW);
 
-      //generate texture
-      this.size_texture = 512;
-      this.generate_normal_map(this.size_texture)
-
       //prepare buffer for texture
       this.texture_id = gl.createTexture();
+   }
+
+   set_normal_map(normal_map_float, size){
       gl.bindTexture(gl.TEXTURE_2D, this.texture_id);
 
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, this.size_texture, this.size_texture, 0, gl.RGB, gl.FLOAT, new Float32Array(this.array_texture));
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, size, size, 0, gl.RGB, gl.FLOAT, new Float32Array(normal_map_float));
 
       // gl.generateMipmap(gl.TEXTURE_2D);
       // or
@@ -47,59 +46,6 @@ class Plane{
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); //do not forget this for float textures
-
-   }
-
-   normalize3(vec){
-      var length = Math.sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2])
-      return [vec[0]/length, vec[1]/length, vec[2]/length]
-   }
-
-   cross(vec_a, vec_b){
-      return [vec_a[1]*vec_b[2]-vec_a[2]*vec_b[1], vec_a[2]*vec_b[0]-vec_a[0]*vec_b[2], vec_a[0]*vec_b[1]-vec_a[1]*vec_b[0]];
-   }
-
-   //generate value for a given pixel, input can be float
-   generate_value(x, y, size){
-      //have a flat surface with only shallow holes in it
-      var sine_frequency = 8*3.1415/size;
-      var val = Math.sin(sine_frequency*x)*Math.sin(sine_frequency*y);
-      if (val < 0.5){
-         return 0;
-      }
-
-      return -(val-0.5)*8;
-   }
-
-   //generate a normal map from the texture values
-   generate_normal_map(size){
-      this.array_texture = [];
-
-      for (var i = 0; i < size; i++) {
-         for (var j = 0; j < size; j++) {
-            var EPSILON = 0.001;
-
-            //find derivatives in both direction
-            var ddi = this.generate_value(i+EPSILON, j, size)-this.generate_value(i, j, size);
-            var ddj = this.generate_value(i, j+EPSILON, size)-this.generate_value(i, j, size);
-
-            //make vectors from derivatives
-            var der_x = [EPSILON, ddi, 0];
-            var der_y = [0, ddj, EPSILON];
-
-            der_x = this.normalize3(der_x)
-            der_y = this.normalize3(der_y)
-
-            //cross should be the normal
-            var normal = this.cross(der_y, der_x);
-
-            normal = this.normalize3(normal);
-
-            this.array_texture.push( normal[2] ); //X
-            this.array_texture.push( normal[1] ); //Y
-            this.array_texture.push( normal[0] ); //Z
-         }
-      }
    }
 
    set_mvp(model, view, proj){

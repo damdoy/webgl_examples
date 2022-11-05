@@ -2,7 +2,12 @@
 <html>
 <body>
 
-Camera height: <input type="range" min="10" max="70" value="40" class="slider" id="slider_height"><br>
+Camera height: <input type="range" min="10" max="70" value="40" class="slider" id="slider_height">
+<input type="radio" id="bumps" name="selection" value="bumps" checked onchange="change_selection()">
+<label for="bumps">bumps</label>
+<input type="radio" id="triangles" name="selection" value="triangles" onchange="change_selection()">
+<label for="triangles">triangles</label>
+<br>
 
 <canvas id="glCanvas" width="1600" height="900"
 style="border:1px solid #c3c3c3;">
@@ -11,8 +16,10 @@ Your browser does not support the canvas element.
 
 <script src="../common/common.js"></script>
 <script src="../common/gl-matrix.js"></script>
+<script src="texture_generation.js"></script>
 <script src="plane.js"></script>
 <script src="bumpmapping.js"></script>
+
 
 </body>
 </html>

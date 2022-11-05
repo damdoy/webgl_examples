@@ -19,6 +19,9 @@ var light_pos_radius = 5;
 var light_pos = [-1, 5.0, 0];
 
 var plane = new Plane;
+var normal_map_size = 512;
+var texture_gen_bumps = new Texture_generation_bumps;
+var texture_gen_triangles = new Texture_generation_triangles;
 
 var last_time = 0;
 
@@ -44,6 +47,11 @@ function main() {
 
    plane.setup(gl);
 
+   texture_gen_bumps.generate_normal_map(normal_map_size);
+   texture_gen_triangles.generate_normal_map(normal_map_size);
+
+   plane.set_normal_map(texture_gen_bumps.array_texture, normal_map_size);
+
    //model matrix for the plane
    mat4.scale(model_matrix_plane, model_matrix_plane, [2, 0, 2]);
 
@@ -56,6 +64,18 @@ function main() {
    mat4.perspective(proj_matrix, fieldOfView, aspect, zNear, zFar);
 
    model_matrix_plane = mat4.rotate(model_matrix_plane, model_matrix_plane, 0.1*Math.PI, [0,1,0]);
+}
+
+function change_selection(){
+   var bump_selection = document.getElementById("bumps");
+   var triangles_selection = document.getElementById("triangles");
+
+   if(bump_selection.checked == true){
+      plane.set_normal_map(texture_gen_bumps.array_texture, normal_map_size);
+   }
+   if(triangles_selection.checked == true){
+      plane.set_normal_map(texture_gen_triangles.array_texture, normal_map_size);
+   }
 }
 
 function draw(){
