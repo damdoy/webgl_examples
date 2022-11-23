@@ -11,8 +11,9 @@ var proj_matrix = mat4.create();
 var view_matrix = mat4.create();
 var view_matrix_reflection = mat4.create();
 
-var cam_height = 20;
-var position_cam = [40.0, cam_height, -40.0];
+var cam_height = 10;
+var cam_radius = 20;
+var position_cam = [cam_radius, cam_height, 0.0];
 
 var water = new Water;
 var water_transf = mat4.create();
@@ -23,10 +24,11 @@ var model_matrix_cubes_base = [mat4.create(), mat4.create(), mat4.create(), mat4
 var cubes_decoration = [new Cube, new Cube];
 var model_matrix_cubes_decoration = [mat4.create(), mat4.create()]
 
-var light_pos_radius = 10;
+var light_pos_radius = 15;
 var light_pos = [-1, 5.0, 0];
 
 var framebuffer_reflection = new Framebuffer;
+var framebuffer_refraction = new Framebuffer;
 
 var canvas_width = 1600;
 var canvas_height = 900;
@@ -50,10 +52,12 @@ function main() {
 
 
    framebuffer_reflection.setup(gl, canvas_width, canvas_height);
+   framebuffer_refraction.setup(gl, canvas_width, canvas_height);
 
    water.setup(gl);
 
    water.set_reflection_texture(framebuffer_reflection.get_texture());;
+   water.set_refraction_texture(framebuffer_refraction.get_texture());;
 
    mat4.translate(model_matrix_cubes_base[0], model_matrix_cubes_base[0], [15, 0, 0]);
    mat4.scale(model_matrix_cubes_base[0], model_matrix_cubes_base[0], [5, 2.5, 20]);
@@ -131,6 +135,8 @@ function draw(){
 
    var light_speed = document.getElementById("slider_speed").value;
    var light_height = document.getElementById("slider_height").value;
+   var cam_height = document.getElementById("cam_height").value;
+   var cam_rotation = -document.getElementById("cam_rotation").value;
 
    //apply a rotation matrix on the light pos to make it rotate around the origin
    light_pos[0] = light_pos[0]*Math.cos(time_diff*light_speed)-light_pos[2]*Math.sin(time_diff*light_speed);
@@ -143,6 +149,10 @@ function draw(){
    light_pos[2] = light_pos[2]/vec_rot_length;
 
    var light_pos_scaled = [light_pos[0]*light_pos_radius, light_pos[1], light_pos[2]*light_pos_radius];
+
+   position_cam[0] = cam_radius*Math.cos(cam_rotation/10);
+   position_cam[1] = cam_height;
+   position_cam[2] = cam_radius*Math.sin(cam_rotation/10);
 
    for (let i = 0; i < cubes_base.length; i++) {
       cubes_base[i].set_light_pos(light_pos_scaled);
@@ -158,8 +168,30 @@ function draw(){
 
    water.set_time( (d.getTime()/500.0)%1000);
    water.set_vp(view_matrix, proj_matrix);
+   water.set_light_pos(light_pos); //for specularity on the water
+   water.set_camera_pos(position_cam); //for specularity on the water
    water.draw();
 
+   //refraction step is just drawing the normal shapes again, but in a framebuffer
+   framebuffer_refraction.bind();
+
+   gl.clearColor(0.7, 0.8, 0.9, 1.0);
+   gl.clearDepth(1.0);
+   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+
+   //we need to clip everything underwater when rendering the reflection framebuffer
+   for (let i = 0; i < cubes_base.length; i++) {
+      cubes_base[i].draw();
+   }
+
+   for (let i = 0; i < cubes_decoration.length; i++) {
+      cubes_decoration[i].draw();
+   }
+
+   framebuffer_refraction.unbind();
+
+   //for reflection step we draw every thing from underneath
    framebuffer_reflection.bind();
 
    gl.clearColor(0.7, 0.8, 0.9, 1.0);

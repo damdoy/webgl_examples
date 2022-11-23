@@ -51,6 +51,10 @@ class Water{
       this.light_pos = light_pos;
    }
 
+   set_camera_pos(cam_pos){
+      this.cam_pos = cam_pos;
+   }
+
    set_model_matrix(model){
       this.model = model;
    }
@@ -61,6 +65,10 @@ class Water{
 
    set_reflection_texture(tex){
       this.reflection_texture_id = tex;
+   }
+
+   set_refraction_texture(tex){
+      this.refraction_texture_id = tex;
    }
 
    set_time(time){
@@ -106,13 +114,23 @@ class Water{
       gl.bindTexture(gl.TEXTURE_2D, this.reflection_texture_id);
 
       gl.uniform1i(gl.getUniformLocation(this.shader_program, "texture_reflection"), 0);
+
+      gl.activeTexture(gl.TEXTURE1);
+
+      gl.bindTexture(gl.TEXTURE_2D, this.refraction_texture_id);
+
+      gl.uniform1i(gl.getUniformLocation(this.shader_program, "texture_refraction"), 1);
       gl.uniform1f(gl.getUniformLocation(this.shader_program, "time"), this.time);
 
       this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.idx_buffer);
 
-      //  this.gl.uniform3fv(
-      //     this.gl.getUniformLocation(this.shader_program, "light_pos"),
-      //     this.light_pos);
+      this.gl.uniform3fv(
+         this.gl.getUniformLocation(this.shader_program, "light_pos"),
+         this.light_pos);
+
+      this.gl.uniform3fv(
+         this.gl.getUniformLocation(this.shader_program, "camera_pos"),
+         this.cam_pos);
 
       this.gl.uniformMatrix4fv(
          this.gl.getUniformLocation(this.shader_program, "proj"),
@@ -162,11 +180,13 @@ class Water{
       varying vec3 pixel_pos;
       varying vec3 pixel_normal;
 
+      uniform vec3 camera_pos;
       uniform vec3 light_pos;
 
       varying vec2 frag_uv;
 
       uniform sampler2D texture_reflection;
+      uniform sampler2D texture_refraction;
 
       uniform mat4 view;
       uniform mat4 proj;
@@ -180,23 +200,52 @@ class Water{
          wave += 0.01*sin( dot(normalize(vec2(3,1)), vec2(x, y)) *256.0+time*1.5);
          wave += 0.02*sin( dot(normalize(vec2(6,-1)), vec2(x, y)) *64.0+time*0.8);
          wave += 0.015*sin( dot(normalize(vec2(8,1)), vec2(x, y)) *128.0+time*0.7);
-         return wave/12.0;
+         return wave/24.0;
       }
 
       void main() {
 
          float wave = get_wave_1(frag_uv.x, frag_uv.y);
 
+         vec3 pos_before_x = vec3(frag_uv.x-0.01, get_wave_1(frag_uv.x-0.01, frag_uv.y), frag_uv.y);
+         vec3 pos_after_x = vec3(frag_uv.x+0.01, get_wave_1(frag_uv.x+0.01, frag_uv.y), frag_uv.y);
+         vec3 pos_before_y = vec3(frag_uv.x, get_wave_1(frag_uv.x, frag_uv.y-0.01), frag_uv.y-0.01);
+         vec3 pos_after_y = vec3(frag_uv.x, get_wave_1(frag_uv.x, frag_uv.y+0.01), frag_uv.y+0.01);
+
+         //get normal of wave, for lighting purpose
+         vec3 normal_wave = normalize(cross( pos_after_x-pos_before_x, pos_after_y-pos_before_y));
+
+         vec3 light_dir = normalize(light_pos-pixel_pos);
+         float diffuse_light = 0.0;
+
+         diffuse_light = dot(normal_wave, light_dir);
+         float light_dist = length(light_pos-pixel_pos);
+         diffuse_light /= 1.0+pow(light_dist, -0.5);
+
+         //reflexion of light for specular light calculation, not the image reflexion
+         vec3 reflexion = 2.0*normal_wave*dot(normal_wave, light_dir)-light_dir;
+         reflexion = normalize(reflexion);
+         vec3 view_dir = normalize(camera_pos-pixel_pos);
+
+         float spec_light = pow(max(dot(reflexion, view_dir), 0.0), 128.0);
+         spec_light = clamp(spec_light, 0.0, 1.0);
+
+         float lum = 0.8*diffuse_light+spec_light;
+
          vec4 screen_pos = proj*view*vec4(pixel_pos, 1.0);
          vec2 corr_screen_pos_refraction = screen_pos.xy*0.5/screen_pos.w+vec2(0.5, 0.5);
          vec2 corr_screen_pos_reflection = vec2(corr_screen_pos_refraction.x, 1.0-corr_screen_pos_refraction.y); //must invert y
 
+         corr_screen_pos_refraction += vec2(wave, wave);
          corr_screen_pos_reflection += vec2(wave, wave);
 
-         // texture( tex_reflection, corr_screen_pos_reflection ).rgb;
-
-         // gl_FragColor = texture2D(texture_reflection, frag_uv);
-         gl_FragColor = texture2D(texture_reflection, corr_screen_pos_reflection);
+         vec3 colour_refraction = texture2D( texture_refraction, corr_screen_pos_refraction ).rgb;
+         vec3 colour_reflection = texture2D( texture_reflection, corr_screen_pos_reflection ).rgb;
+         vec4 lighting = vec4(0.5*diffuse_light+spec_light, 0.5*diffuse_light+spec_light, 0.5*diffuse_light+spec_light, 1.0);
+         gl_FragColor = vec4(0.25*colour_refraction, 1.0)+vec4(0.75*colour_reflection, 1.0)+ lighting;
+         // gl_FragColor = vec4(0.25*colour_refraction, 1.0)+vec4(0.75*colour_reflection, 1.0)+ 0.5*diffuse_light;
+         // gl_FragColor =  vec4(0.5*diffuse_light+spec_light,0.5*diffuse_light+spec_light, 0.5*diffuse_light+spec_light, 1.0);
+         // gl_FragColor =  vec4(light_dir, 1.0);
       }
    `;
 
