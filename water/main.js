@@ -168,7 +168,7 @@ function draw(){
 
    water.set_time( (d.getTime()/500.0)%1000);
    water.set_vp(view_matrix, proj_matrix);
-   water.set_light_pos(light_pos); //for specularity on the water
+   water.set_light_pos(light_pos_scaled); //for specularity on the water
    water.set_camera_pos(position_cam); //for specularity on the water
    water.draw();
 

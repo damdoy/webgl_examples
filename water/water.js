@@ -151,7 +151,7 @@ class Water{
    }
 
    vertex_shader_code = `
-      precision mediump float;
+      precision highp float; //high precision needed in mobile for light to display correctly
       attribute vec4 vertex_pos;
       attribute vec3 normal;
 
@@ -175,7 +175,7 @@ class Water{
    `;
 
    fragment_shader_code = `
-      precision mediump float; //necessary in webgl glsl, medium precision for performance?
+      precision highp float; //high precision needed in mobile for light to display correctly
 
       varying vec3 pixel_pos;
       varying vec3 pixel_normal;
@@ -207,10 +207,12 @@ class Water{
 
          float wave = get_wave_1(frag_uv.x, frag_uv.y);
 
-         vec3 pos_before_x = vec3(frag_uv.x-0.01, get_wave_1(frag_uv.x-0.01, frag_uv.y), frag_uv.y);
-         vec3 pos_after_x = vec3(frag_uv.x+0.01, get_wave_1(frag_uv.x+0.01, frag_uv.y), frag_uv.y);
-         vec3 pos_before_y = vec3(frag_uv.x, get_wave_1(frag_uv.x, frag_uv.y-0.01), frag_uv.y-0.01);
-         vec3 pos_after_y = vec3(frag_uv.x, get_wave_1(frag_uv.x, frag_uv.y+0.01), frag_uv.y+0.01);
+         //interestingly the normal_wave would not be calculated correctly on mobile
+         //if the float precision was only medium
+         vec3 pos_before_x = vec3(frag_uv.x-0.001, get_wave_1(frag_uv.x-0.001, frag_uv.y), frag_uv.y);
+         vec3 pos_after_x = vec3(frag_uv.x+0.001, get_wave_1(frag_uv.x+0.001, frag_uv.y), frag_uv.y);
+         vec3 pos_before_y = vec3(frag_uv.x, get_wave_1(frag_uv.x, frag_uv.y-0.001), frag_uv.y-0.001);
+         vec3 pos_after_y = vec3(frag_uv.x, get_wave_1(frag_uv.x, frag_uv.y+0.001), frag_uv.y+0.001);
 
          //get normal of wave, for lighting purpose
          vec3 normal_wave = normalize(cross( pos_after_x-pos_before_x, pos_after_y-pos_before_y));
@@ -220,17 +222,17 @@ class Water{
 
          diffuse_light = dot(normal_wave, light_dir);
          float light_dist = length(light_pos-pixel_pos);
-         diffuse_light /= 1.0+pow(light_dist, -0.5);
+         diffuse_light /= (1.0+pow(light_dist, -0.5));
 
          //reflexion of light for specular light calculation, not the image reflexion
          vec3 reflexion = 2.0*normal_wave*dot(normal_wave, light_dir)-light_dir;
          reflexion = normalize(reflexion);
          vec3 view_dir = normalize(camera_pos-pixel_pos);
 
-         float spec_light = pow(max(dot(reflexion, view_dir), 0.0), 128.0);
+         float spec_light = pow(max(dot(reflexion, view_dir), 0.0), 256.0);
          spec_light = clamp(spec_light, 0.0, 1.0);
 
-         float lum = 0.8*diffuse_light+spec_light;
+         float lum = 0.5*diffuse_light+spec_light;
 
          vec4 screen_pos = proj*view*vec4(pixel_pos, 1.0);
          vec2 corr_screen_pos_refraction = screen_pos.xy*0.5/screen_pos.w+vec2(0.5, 0.5);
@@ -241,11 +243,8 @@ class Water{
 
          vec3 colour_refraction = texture2D( texture_refraction, corr_screen_pos_refraction ).rgb;
          vec3 colour_reflection = texture2D( texture_reflection, corr_screen_pos_reflection ).rgb;
-         vec4 lighting = vec4(0.5*diffuse_light+spec_light, 0.5*diffuse_light+spec_light, 0.5*diffuse_light+spec_light, 1.0);
+         vec4 lighting = vec4(lum, lum, lum, 1.0);
          gl_FragColor = vec4(0.25*colour_refraction, 1.0)+vec4(0.75*colour_reflection, 1.0)+ lighting;
-         // gl_FragColor = vec4(0.25*colour_refraction, 1.0)+vec4(0.75*colour_reflection, 1.0)+ 0.5*diffuse_light;
-         // gl_FragColor =  vec4(0.5*diffuse_light+spec_light,0.5*diffuse_light+spec_light, 0.5*diffuse_light+spec_light, 1.0);
-         // gl_FragColor =  vec4(light_dir, 1.0);
       }
    `;
 
