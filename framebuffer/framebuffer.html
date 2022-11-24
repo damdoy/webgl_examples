@@ -4,7 +4,7 @@
 
 Rotation Speed: <input type="range" min="-100" max="100" value="10" class="slider" id="slider_speed"><br>
 Effect:
-<input type="radio" id="nothing" name="selection" value="nothing" checked onchange="change_selection()">
+<input type="radio" id="nothing" name="selection" value="nothing" onchange="change_selection()">
 <label for="nothing">Nothing</label>
 <input type="radio" id="invert" name="selection" value="invert" onchange="change_selection()">
 <label for="invert">Invert</label>
@@ -12,7 +12,7 @@ Effect:
 <label for="gaussian">Gaussian</label>
 <input type="radio" id="sobel" name="selection" value="sobel" onchange="change_selection()">
 <label for="sobel">Sobel</label>
-<input type="radio" id="glass" name="selection" value="glass" onchange="change_selection()">
+<input type="radio" id="glass" name="selection" value="glass" onchange="change_selection()" checked>
 <label for="glass">Glass</label>
 <br>
 

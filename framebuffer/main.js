@@ -59,6 +59,8 @@ function main() {
    const zFar = 1000.0;
 
    mat4.perspective(proj_matrix, fieldOfView, aspect, zNear, zFar);
+
+   change_selection();
 }
 
 function change_selection(){
