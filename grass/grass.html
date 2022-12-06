@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+Wind speed: <input type="range" min="10" max="150" value="70" class="slider" id="slider_speed">
+Camera position: <input type="range" min="20" max="70" value="70" class="slider" id="camera_position"><br>
+Number of grass blades:
+<input type="radio" id="4000" name="max_grass" value="4000">
+<label for="4000">4000</label>
+<input type="radio" id="8000" name="max_grass" value="8000">
+<label for="8000">8000</label>
+<input type="radio" id="16000" name="max_grass" value="16000" checked>
+<label for="16000">16000</label>
+<br>
+
+<canvas id="glCanvas" width="1600" height="900"
+style="border:1px solid #c3c3c3;">
+Your browser does not support the canvas element.
+</canvas>
+
+<script src="../common/common.js"></script>
+<script src="../common/gl-matrix.js"></script>
+<script src="plane_sine.js"></script>
+<script src="grass_manager.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>
