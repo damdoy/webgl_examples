@@ -26,6 +26,10 @@ class Trunk{
         const vertexShader = loadShader(this.gl, this.gl.VERTEX_SHADER, this.vertex_shader_code);
         const fragmentShader = loadShader(this.gl, this.gl.FRAGMENT_SHADER, this.fragment_shader_code);
 
+        this.vao = this.gl.createVertexArray();
+
+        this.gl.bindVertexArray(this.vao);
+
         //create shader
         this.shader_program = this.gl.createProgram();
         this.gl.attachShader(this.shader_program, vertexShader);
@@ -84,6 +88,9 @@ class Trunk{
     }
 
     draw(){
+        this.gl.bindVertexArray(this.vao);
+        this.gl.useProgram(this.shader_program);
+
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.pos_buffer);
         this.gl.vertexAttribPointer(
             this.gl.getAttribLocation(this.shader_program, "vertex_pos"),
@@ -116,8 +123,6 @@ class Trunk{
 
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.idx_buffer);
 
-        this.gl.useProgram(this.shader_program);
-
         this.gl.uniform3fv(
             this.gl.getUniformLocation(this.shader_program, "light_pos"),
             this.light_pos);
@@ -140,6 +145,8 @@ class Trunk{
 
         var uniform_loc = this.gl.getAttribLocation(this.shader_program, "model_mat");
 
+        const ext = this.gl.getExtension("ANGLE_instanced_arrays");
+
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.transforms_list);
 
         this.gl.enableVertexAttribArray(uniform_loc);
@@ -160,8 +167,10 @@ class Trunk{
         this.gl.vertexAttribDivisor(uniform_loc+3, 1);
 
         this.gl.drawElementsInstanced(this.gl.TRIANGLES, this.nb_indices, this.gl.UNSIGNED_SHORT, 0, this.nb_trunks);
+        // gl.drawElementsInstancedANGLE(this.gl.TRIANGLES, this.nb_indices, this.gl.UNSIGNED_SHORT, 0, this.nb_trunksindices, this.nb_trunks);
 
         this.gl.vertexAttribDivisor(uniform_loc, 0);
+        this.gl.useProgram(null);
     }
 
     vertex_shader_code = `

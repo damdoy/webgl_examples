@@ -62,11 +62,14 @@ function draw(){
    //make it framerate independant
    time_diff = time-last_time;
 
-   var rotation_speed = document.getElementById("slider_speed").value;
+   var rotation_active = document.getElementById("rotation").checked;
+   var draw_leaves_active = document.getElementById("leaves").checked;
 
    //rotate the model matrix of the plane by a little bit
    var model = mat4.create();
-   model = mat4.rotate(model, model, -2*Math.PI*time_diff*rotation_speed, [0,1,0]);
+   if(rotation_active){
+      model = mat4.rotate(model, model, -2*Math.PI*time_diff*10, [0,1,0]);
+   }
 
    mat4.multiply(tree_transf, tree_transf, model);
    mat4.multiply(cube_transf, cube_transf, model);
@@ -79,7 +82,7 @@ function draw(){
    // tree.set_time(d.getTime()/10000.0);
    tree.set_light_pos(light_pos);
    tree.set_mvp(tree_transf, view_matrix, proj_matrix);
-   tree.draw();
+   tree.draw(draw_leaves_active);
 
    last_time = time;
 

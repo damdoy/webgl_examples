@@ -16,6 +16,8 @@ var grass_manager = new Grass_manager;
 
 var last_time = 0;
 
+var time_wind = 0;
+
 function main() {
    canvas = document.querySelector("#glCanvas");
    gl = canvas.getContext("webgl2");
@@ -63,7 +65,8 @@ function draw(){
    time_diff = time-last_time;
 
    var wind_speed = document.getElementById("slider_speed").value;
-   wind_speed = wind_speed/50.0;
+   // wind_speed = wind_speed/50.0;
+   time_wind += wind_speed/70000.0;
 
    if(document.getElementById("16000").checked == true){
       grass_manager.set_max_grass(16000);
@@ -78,7 +81,7 @@ function draw(){
    plane.set_mvp(model_matrix_plane, view_matrix, proj_matrix);
    plane.draw();
 
-   grass_manager.set_time( (d.getTime()*wind_speed/50000.0)%1000);
+   grass_manager.set_time( time_wind);
    grass_manager.set_mvp(model_matrix_grass_manager, view_matrix, proj_matrix);
    grass_manager.draw();
 

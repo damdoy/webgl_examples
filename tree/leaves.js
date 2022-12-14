@@ -16,6 +16,10 @@ class Leaves{
             return null;
         }
 
+        this.vao = this.gl.createVertexArray();
+
+        this.gl.bindVertexArray(this.vao);
+
         //buffer for the vertices pos of the cube
         this.pos_buffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.pos_buffer);
@@ -147,6 +151,9 @@ class Leaves{
     }
 
     draw(){
+        this.gl.bindVertexArray(this.vao);
+        this.gl.useProgram(this.shader_program);
+
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.pos_buffer);
         this.gl.vertexAttribPointer(
             this.gl.getAttribLocation(this.shader_program, "vertex_pos"),
@@ -178,8 +185,6 @@ class Leaves{
         this.gl.enableVertexAttribArray(this.gl.getAttribLocation(this.shader_program, "uv"));
 
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.idx_buffer);
-
-        this.gl.useProgram(this.shader_program);
 
         //send the matrices to the shader via the uniformMatrix
         this.gl.uniformMatrix4fv(

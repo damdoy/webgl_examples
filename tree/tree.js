@@ -7,14 +7,9 @@ class Tree{
 
         this.leaves = new Leaves;
 
-
         this.leaves.generate(this.trunk.get_end_point_matrices());
 
         this.leaves.setup(gl);
-    }
-
-    load(){
-
     }
 
     set_time(t){
@@ -38,8 +33,10 @@ class Tree{
         this.light_pos = light_pos;
     }
 
-    draw(){
+    draw(draw_leaves_active){
         this.trunk.draw();
-        this.leaves.draw();
+        if(draw_leaves_active){
+            this.leaves.draw();
+        }
     }
 }

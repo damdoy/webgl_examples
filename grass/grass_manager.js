@@ -20,6 +20,10 @@ class Grass_manager{
          return null;
       }
 
+      this.vao = this.gl.createVertexArray();
+
+      this.gl.bindVertexArray(this.vao);
+
       this.pos_buffer = this.gl.createBuffer();
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.pos_buffer);
       this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.positions), this.gl.STATIC_DRAW);
@@ -126,6 +130,9 @@ class Grass_manager{
    }
 
    draw(){
+      this.gl.bindVertexArray(this.vao);
+      this.gl.useProgram(this.shader_program);
+
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.pos_buffer);
       this.gl.vertexAttribPointer(
           this.gl.getAttribLocation(this.shader_program, "vertex_pos"),
@@ -170,8 +177,6 @@ class Grass_manager{
       this.gl.vertexAttribDivisor(uniform_loc+1, 1);
       this.gl.vertexAttribDivisor(uniform_loc+2, 1);
       this.gl.vertexAttribDivisor(uniform_loc+3, 1);
-
-      this.gl.useProgram(this.shader_program);
 
       this.gl.uniformMatrix4fv(
          this.gl.getUniformLocation(this.shader_program, "proj"),

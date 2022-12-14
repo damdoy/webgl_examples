@@ -9,6 +9,10 @@ class Cube{
       const vertexShader = loadShader(this.gl, this.gl.VERTEX_SHADER, this.vertex_shader_code);
       const fragmentShader = loadShader(this.gl, this.gl.FRAGMENT_SHADER, this.fragment_shader_code);
 
+      this.vao = this.gl.createVertexArray();
+
+      this.gl.bindVertexArray(this.vao);
+
       //create shader
       this.shader_program = this.gl.createProgram();
       this.gl.attachShader(this.shader_program, vertexShader);
@@ -59,6 +63,9 @@ class Cube{
    }
 
    draw(){
+      this.gl.useProgram(this.shader_program);
+      this.gl.bindVertexArray(this.vao);
+
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.pos_buffer);
       this.gl.vertexAttribPointer(
           this.gl.getAttribLocation(this.shader_program, "vertex_pos"),
@@ -80,8 +87,6 @@ class Cube{
       this.gl.enableVertexAttribArray(this.gl.getAttribLocation(this.shader_program, "normal"));
 
       this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.idx_buffer);
-
-      this.gl.useProgram(this.shader_program);
 
       this.gl.uniform3fv(
          this.gl.getUniformLocation(this.shader_program, "light_pos"),
@@ -137,7 +142,7 @@ class Cube{
     `;
 
    fragment_shader_code = `
-      precision mediump float; //necessary in webgl glsl, medium precision for performance?
+      precision highp float;
 
       varying vec3 pixel_pos;
       varying vec3 pixel_normal;
