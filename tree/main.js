@@ -47,6 +47,11 @@ function main() {
    mat4.perspective(proj_matrix, fieldOfView, aspect, zNear, zFar);
 }
 
+function reload_tree(){
+   tree = new Tree;
+   tree.setup(gl);
+}
+
 function draw(){
 
    mat4.lookAt(view_matrix, position_cam, [0, 10, 0], [0, 1, 0]);
